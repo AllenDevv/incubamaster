@@ -54,7 +54,6 @@
 
         .main-card { max-width: 450px; }
 
-        /* Estilo para Múltiplos Lotes */
         .batch-item {
             border-left: 6px solid var(--primary-gold);
             transition: transform 0.2s;
@@ -136,7 +135,7 @@
 
 <header>
     <h1>IncubaMaster Pro</h1>
-    <p>Monitoramento Profissional de Aves</p>
+    <p>Monitore suas incubações de forma rápida e fácil.</p>
 </header>
 
 <div class="content-wrapper">
@@ -182,17 +181,24 @@
     const DB = 'incubamaster_db';
     let batches = JSON.parse(localStorage.getItem(DB)) || [];
 
-    if ('serviceWorker' in navigator) {
+    // Melhorado: Só registra o SW se for HTTPS para evitar erros em local
+    if ('serviceWorker' in navigator && location.protocol === 'https:') {
         navigator.serviceWorker.register('service-worker.js').then(reg => {
             console.log('SW ativo.');
         }).catch(err => console.log('Erro SW:', err));
     }
 
     async function requestNotificationPermission() {
-        const permission = await Notification.requestPermission();
-        if (permission === "granted") {
-            document.getElementById('btnPermission').style.display = 'none';
-            syncWithWorker();
+        // ESSENCIAL PARA SKETCHWARE: Envia sinal pelo alerta
+        alert("PEDIR_NOTIFICACAO");
+
+        // Funcionalidade para navegador comum
+        if (window.Notification) {
+            const permission = await Notification.requestPermission();
+            if (permission === "granted") {
+                document.getElementById('btnPermission').style.display = 'none';
+                syncWithWorker();
+            }
         }
     }
 
@@ -258,8 +264,6 @@
         
         batches.forEach(b => {
             const s = calculate(b);
-            
-            // Cálculo da Data de Nascimento
             const startDate = new Date(b.startDate + 'T00:00:00');
             const birthDate = new Date(startDate);
             birthDate.setDate(startDate.getDate() + parseInt(b.totalDays));
@@ -286,9 +290,7 @@
                 </div>
                 <h3 style="margin:0;">${b.name}</h3>
                 <span class="date-highlight">📅 Nascimento: ${birthDateStr}</span>
-                
                 <div class="progress-container"><div class="progress-bar" style="width:${s.pct}%"></div></div>
-                
                 <div class="status-grid">
                     <div class="status-box"><b>${s.day}º</b><span>Dia</span></div>
                     <div class="status-box"><b>${s.left}</b><span>Faltam</span></div>
@@ -309,7 +311,6 @@
         document.getElementById('batchName').value = b.name;
         document.getElementById('startDate').value = b.startDate;
         document.getElementById('eggCount').value = b.eggCount;
-        
         const speciesSelect = document.getElementById('species');
         for (let i = 0; i < speciesSelect.options.length; i++) {
             if (speciesSelect.options[i].getAttribute('data-name') === b.speciesName) {
@@ -317,7 +318,6 @@
                 break;
             }
         }
-        
         document.getElementById('submitBtn').innerText = "Salvar Alterações";
         document.getElementById('cancelBtn').style.display = "block";
         window.scrollTo({top: 0, behavior: 'smooth'});
@@ -346,7 +346,7 @@
 
     document.getElementById('startDate').valueAsDate = new Date();
     render();
-    if (Notification.permission === 'granted') document.getElementById('btnPermission').style.display = 'none';
+    if (window.Notification && Notification.permission === 'granted') document.getElementById('btnPermission').style.display = 'none';
 </script>
 </body>
 </html>
