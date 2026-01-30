@@ -181,35 +181,22 @@
     const DB = 'incubamaster_db';
     let batches = JSON.parse(localStorage.getItem(DB)) || [];
 
-    // Tenta registrar Service Worker (apenas se for HTTPS/PWA)
-    if ('serviceWorker' in navigator && location.protocol === 'https:') {
-        navigator.serviceWorker.register('service-worker.js').catch(err => console.log('SW offline.'));
-    }
-
-    // --- FUNÇÕES AJUSTADAS PARA SKETCHWARE ---
-
     function requestNotificationPermission() {
         if (window.AndroidBridge) {
-            // Chama o Java Nativo
-            AndroidBridge.dispararNotificacao("IncubaMaster Pro", "Alertas ativados no aplicativo!");
+            AndroidBridge.dispararNotificacao("IncubaMaster Pro", "Alertas ativados com sucesso!");
             document.getElementById('btnPermission').style.display = 'none';
         } else if (window.Notification) {
-            // Navegador comum
             Notification.requestPermission().then(p => {
                 if(p === 'granted') document.getElementById('btnPermission').style.display = 'none';
             });
-        } else {
-            alert("Notificações não suportadas.");
         }
     }
 
     function exportData() {
         const dadosStr = JSON.stringify(batches);
         if (window.AndroidBridge) {
-            // Envia para o Java salvar como arquivo REAL (evita erro de Intent)
             AndroidBridge.salvarBackup(dadosStr);
         } else {
-            // Backup via link (funciona apenas no Chrome/PC)
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(dadosStr);
             const dl = document.createElement('a');
             dl.setAttribute("href", dataStr);
@@ -227,14 +214,11 @@
                     batches = importados;
                     save();
                     if(window.AndroidBridge) AndroidBridge.dispararNotificacao("Sucesso", "Dados importados!");
-                    else alert("Importado com sucesso!");
                 }
-            } catch(err) { alert("Erro no arquivo JSON!"); }
+            } catch(err) { alert("Erro no arquivo!"); }
         };
         reader.readAsText(e.target.files[0]);
     }
-
-    // --- RESTANTE DA LÓGICA DO APP ---
 
     function save() { 
         localStorage.setItem(DB, JSON.stringify(batches)); 
@@ -250,18 +234,13 @@
         const eggs = document.getElementById('eggCount').value;
         const id = document.getElementById('editId').value;
 
-        if (!name || !date) {
-            if(window.AndroidBridge) AndroidBridge.dispararNotificacao("Aviso", "Preencha nome e data!");
-            else alert("Preencha o nome e a data!");
-            return;
-        }
+        if (!name || !date) return alert("Preencha nome e data!");
 
         if (id) {
             batches = batches.map(b => b.id == id ? {...b, name, totalDays: days, speciesName, startDate: date, eggCount: eggs} : b);
         } else {
             batches.push({ id: Date.now(), name, totalDays: days, speciesName, startDate: date, eggCount: eggs });
         }
-        
         resetForm();
         save();
     }
@@ -297,19 +276,26 @@
             birthDate.setDate(startDate.getDate() + parseInt(b.totalDays));
             const birthDateStr = birthDate.toLocaleDateString('pt-BR');
 
+            // --- LÓGICA DE NOTIFICAÇÃO AUTOMÁTICA ---
+            if (window.AndroidBridge) {
+                if (s.day === 7 || s.day === 14) {
+                    AndroidBridge.dispararNotificacao("🔍 Ovoscopia: " + b.name, "Dia de conferir os ovos!");
+                }
+                if (s.left <= 3 && s.left > 0) {
+                    AndroidBridge.dispararNotificacao("💧 Umidade: " + b.name, "Aumente a umidade para o nascimento!");
+                }
+                if (s.left === 0) {
+                    AndroidBridge.dispararNotificacao("🐥 Eclosão: " + b.name, "Os pintinhos nascem hoje!");
+                }
+            }
+
             const item = document.createElement('div');
             item.className = 'card batch-item';
 
             let alertsHtml = '';
-            if (s.day === 7 || s.day === 14) {
-                alertsHtml += `<div class="alert-box alert-info">🔍 <b>Ovoscopia:</b> Dia de verificar o desenvolvimento.</div>`;
-            }
-            if (s.left <= 3 && s.left > 0) {
-                alertsHtml += `<div class="alert-box alert-warning">💧 <b>Manejo:</b> Aumente a umidade e pare a viragem!</div>`;
-            }
-            if (s.left === 0) {
-                alertsHtml += `<div class="alert-box alert-success">🐥 <b>Eclosão:</b> Nascimento previsto para hoje!</div>`;
-            }
+            if (s.day === 7 || s.day === 14) alertsHtml += `<div class="alert-box alert-info">🔍 <b>Ovoscopia:</b> Dia de verificar o desenvolvimento.</div>`;
+            if (s.left <= 3 && s.left > 0) alertsHtml += `<div class="alert-box alert-warning">💧 <b>Manejo:</b> Aumente a umidade e pare a viragem!</div>`;
+            if (s.left === 0) alertsHtml += `<div class="alert-box alert-success">🐥 <b>Eclosão:</b> Nascimento previsto para hoje!</div>`;
 
             item.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom:10px;">
@@ -339,23 +325,13 @@
         document.getElementById('batchName').value = b.name;
         document.getElementById('startDate').value = b.startDate;
         document.getElementById('eggCount').value = b.eggCount;
-        const speciesSelect = document.getElementById('species');
-        for (let i = 0; i < speciesSelect.options.length; i++) {
-            if (speciesSelect.options[i].getAttribute('data-name') === b.speciesName) {
-                speciesSelect.selectedIndex = i;
-                break;
-            }
-        }
         document.getElementById('submitBtn').innerText = "Salvar Alterações";
         document.getElementById('cancelBtn').style.display = "block";
         window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
     function deleteBatch(id) { 
-        if(confirm("Excluir este lote?")) { 
-            batches = batches.filter(x => x.id !== id); 
-            save(); 
-        } 
+        if(confirm("Excluir este lote?")) { batches = batches.filter(x => x.id !== id); save(); } 
     }
 
     document.getElementById('startDate').valueAsDate = new Date();
