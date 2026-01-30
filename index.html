@@ -181,40 +181,64 @@
     const DB = 'incubamaster_db';
     let batches = JSON.parse(localStorage.getItem(DB)) || [];
 
-    // Melhorado: Só registra o SW se for HTTPS para evitar erros em local
+    // Tenta registrar Service Worker (apenas se for HTTPS/PWA)
     if ('serviceWorker' in navigator && location.protocol === 'https:') {
-        navigator.serviceWorker.register('service-worker.js').then(reg => {
-            console.log('SW ativo.');
-        }).catch(err => console.log('Erro SW:', err));
+        navigator.serviceWorker.register('service-worker.js').catch(err => console.log('SW offline.'));
     }
 
-    async function requestNotificationPermission() {
-        // ESSENCIAL PARA SKETCHWARE: Envia sinal pelo alerta
-        alert("PEDIR_NOTIFICACAO");
+    // --- FUNÇÕES AJUSTADAS PARA SKETCHWARE ---
 
-        // Funcionalidade para navegador comum
-        if (window.Notification) {
-            const permission = await Notification.requestPermission();
-            if (permission === "granted") {
-                document.getElementById('btnPermission').style.display = 'none';
-                syncWithWorker();
-            }
-        }
-    }
-
-    function syncWithWorker() {
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-            navigator.serviceWorker.controller.postMessage({
-                type: 'SYNC_BATCHES',
-                batches: batches
+    function requestNotificationPermission() {
+        if (window.AndroidBridge) {
+            // Chama o Java Nativo
+            AndroidBridge.dispararNotificacao("IncubaMaster Pro", "Alertas ativados no aplicativo!");
+            document.getElementById('btnPermission').style.display = 'none';
+        } else if (window.Notification) {
+            // Navegador comum
+            Notification.requestPermission().then(p => {
+                if(p === 'granted') document.getElementById('btnPermission').style.display = 'none';
             });
+        } else {
+            alert("Notificações não suportadas.");
         }
     }
+
+    function exportData() {
+        const dadosStr = JSON.stringify(batches);
+        if (window.AndroidBridge) {
+            // Envia para o Java salvar como arquivo REAL (evita erro de Intent)
+            AndroidBridge.salvarBackup(dadosStr);
+        } else {
+            // Backup via link (funciona apenas no Chrome/PC)
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(dadosStr);
+            const dl = document.createElement('a');
+            dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", "backup_incubamaster.json");
+            dl.click();
+        }
+    }
+
+    function importData(e) {
+        const reader = new FileReader();
+        reader.onload = (event) => { 
+            try {
+                const importados = JSON.parse(event.target.result); 
+                if(Array.isArray(importados)){
+                    batches = importados;
+                    save();
+                    if(window.AndroidBridge) AndroidBridge.dispararNotificacao("Sucesso", "Dados importados!");
+                    else alert("Importado com sucesso!");
+                }
+            } catch(err) { alert("Erro no arquivo JSON!"); }
+        };
+        reader.readAsText(e.target.files[0]);
+    }
+
+    // --- RESTANTE DA LÓGICA DO APP ---
 
     function save() { 
         localStorage.setItem(DB, JSON.stringify(batches)); 
         render(); 
-        syncWithWorker(); 
     }
 
     function handleForm() {
@@ -226,7 +250,11 @@
         const eggs = document.getElementById('eggCount').value;
         const id = document.getElementById('editId').value;
 
-        if (!name || !date) return alert("Preencha o nome e a data!");
+        if (!name || !date) {
+            if(window.AndroidBridge) AndroidBridge.dispararNotificacao("Aviso", "Preencha nome e data!");
+            else alert("Preencha o nome e a data!");
+            return;
+        }
 
         if (id) {
             batches = batches.map(b => b.id == id ? {...b, name, totalDays: days, speciesName, startDate: date, eggCount: eggs} : b);
@@ -323,30 +351,15 @@
         window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
-    function deleteBatch(id) { if(confirm("Excluir este lote?")) { batches = batches.filter(x => x.id !== id); save(); } }
-
-    function exportData() {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(batches));
-        const dl = document.createElement('a');
-        dl.setAttribute("href", dataStr);
-        dl.setAttribute("download", "backup_incubamaster.json");
-        dl.click();
-    }
-
-    function importData(e) {
-        const reader = new FileReader();
-        reader.onload = (event) => { 
-            try {
-                batches = JSON.parse(event.target.result); 
-                save();
-            } catch(e) { alert("Erro no arquivo!"); }
-        };
-        reader.readAsText(e.target.files[0]);
+    function deleteBatch(id) { 
+        if(confirm("Excluir este lote?")) { 
+            batches = batches.filter(x => x.id !== id); 
+            save(); 
+        } 
     }
 
     document.getElementById('startDate').valueAsDate = new Date();
     render();
-    if (window.Notification && Notification.permission === 'granted') document.getElementById('btnPermission').style.display = 'none';
 </script>
 </body>
 </html>
