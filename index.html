@@ -185,10 +185,6 @@
         if (window.AndroidBridge) {
             AndroidBridge.dispararNotificacao("IncubaMaster Pro", "Alertas ativados com sucesso!");
             document.getElementById('btnPermission').style.display = 'none';
-        } else if (window.Notification) {
-            Notification.requestPermission().then(p => {
-                if(p === 'granted') document.getElementById('btnPermission').style.display = 'none';
-            });
         }
     }
 
@@ -196,12 +192,6 @@
         const dadosStr = JSON.stringify(batches);
         if (window.AndroidBridge) {
             AndroidBridge.salvarBackup(dadosStr);
-        } else {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(dadosStr);
-            const dl = document.createElement('a');
-            dl.setAttribute("href", dataStr);
-            dl.setAttribute("download", "backup_incubamaster.json");
-            dl.click();
         }
     }
 
@@ -221,7 +211,14 @@
     }
 
     function save() { 
-        localStorage.setItem(DB, JSON.stringify(batches)); 
+        const jsonStr = JSON.stringify(batches);
+        localStorage.setItem(DB, jsonStr); 
+        
+        // NOVO: Envia os dados para o Java processar em segundo plano
+        if (window.AndroidBridge && window.AndroidBridge.salvarParaSegundoPlano) {
+            window.AndroidBridge.salvarParaSegundoPlano(jsonStr);
+        }
+        
         render(); 
     }
 
@@ -276,17 +273,11 @@
             birthDate.setDate(startDate.getDate() + parseInt(b.totalDays));
             const birthDateStr = birthDate.toLocaleDateString('pt-BR');
 
-            // --- LÓGICA DE NOTIFICAÇÃO AUTOMÁTICA ---
+            // --- LÓGICA DE NOTIFICAÇÃO (App Aberto) ---
             if (window.AndroidBridge) {
-                if (s.day === 7 || s.day === 14) {
-                    AndroidBridge.dispararNotificacao("🔍 Ovoscopia: " + b.name, "Dia de conferir os ovos!");
-                }
-                if (s.left <= 3 && s.left > 0) {
-                    AndroidBridge.dispararNotificacao("💧 Umidade: " + b.name, "Aumente a umidade para o nascimento!");
-                }
-                if (s.left === 0) {
-                    AndroidBridge.dispararNotificacao("🐥 Eclosão: " + b.name, "Os pintinhos nascem hoje!");
-                }
+                if (s.day === 7 || s.day === 14) AndroidBridge.dispararNotificacao("🔍 Ovoscopia: " + b.name, "Dia de conferir os ovos!");
+                if (s.left <= 3 && s.left > 0) AndroidBridge.dispararNotificacao("💧 Umidade: " + b.name, "Aumente a umidade agora!");
+                if (s.left === 0) AndroidBridge.dispararNotificacao("🐥 Eclosão: " + b.name, "Os pintinhos nascem hoje!");
             }
 
             const item = document.createElement('div');
