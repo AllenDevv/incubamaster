@@ -18,7 +18,7 @@
             --text-main: #1e293b;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         
         body { 
             margin: 0; padding: 0; background-color: var(--bg-body); 
@@ -50,10 +50,8 @@
         }
 
         .main-card { max-width: 450px; }
+        .batch-item { border-left: 6px solid var(--primary-gold); position: relative; }
 
-        .batch-item { border-left: 6px solid var(--primary-gold); }
-
-        /* DESTAQUE DOS NÚMEROS */
         .status-box b { 
             display: block; 
             font-size: 32px; 
@@ -116,14 +114,14 @@
             padding: 10px; font-size: 12px; font-weight: 600; color: #64748B; cursor: pointer;
         }
 
-        /* BOTÕES DE RODAPÉ CORRIGIDOS */
         .btn-footer { 
-            flex: 1; border: none; background: none; 
+            flex: 1; border: none; background: transparent; 
             font-size: 14px; font-weight: 700; cursor: pointer; 
             padding: 12px; font-family: 'Poppins', sans-serif;
             border-radius: 12px; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 4px;
         }
-        .btn-footer:active { background: #f1f5f9; }
+        .btn-footer:active { background: #f1f5f9; transform: scale(0.98); }
 
         @media (min-width: 768px) {
             #batchList { grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); }
@@ -135,7 +133,7 @@
 
 <header>
     <h1>IncubaMaster Pro</h1>
-    <p>Monitorize as suas incubações de forma profissional.</p>
+    <p>Monitorize as suas incubações com precisão.</p>
 </header>
 
 <div class="content-wrapper">
@@ -211,9 +209,8 @@
             if (Array.isArray(importados)) {
                 batches = importados;
                 save();
-                alert("Dados importados com sucesso!");
             }
-        } catch (err) { alert("Erro ao importar backup."); }
+        } catch (err) { alert("Erro ao importar."); }
     }
 
     function save() { 
@@ -234,7 +231,7 @@
         const eggs = document.getElementById('eggCount').value;
         const id = document.getElementById('editId').value;
 
-        if (!name || !date) return alert("Preencha o nome e a data!");
+        if (!name || !date) return alert("Preencha nome e data!");
 
         if (id) {
             batches = batches.map(b => b.id == id ? {...b, name, totalDays: days, speciesName, startDate: date, eggCount: eggs} : b);
@@ -299,16 +296,28 @@
                 </div>
                 ${alertsHtml}
                 <div style="display:flex; justify-content:space-between; border-top:1px solid #f1f5f9; margin-top:10px; padding-top:5px">
-                    <button class="btn-footer" style="color:#3498db" onclick="editBatch(${b.id})">⚙️ Editar</button>
-                    <button class="btn-footer" style="color:#e74c3c" onclick="deleteBatch(${b.id})">🗑️ Eliminar</button>
+                    <button class="btn-footer" style="color:#3498db" id="btn-edit-${b.id}">⚙️ Editar</button>
+                    <button class="btn-footer" style="color:#e74c3c" id="btn-del-${b.id}">🗑️ Eliminar</button>
                 </div>
             `;
             list.appendChild(item);
+
+            // Adicionando eventos de clique de forma ultra-segura
+            document.getElementById(`btn-edit-${b.id}`).addEventListener('click', function(e) {
+                e.preventDefault();
+                editBatch(b.id);
+            });
+
+            document.getElementById(`btn-del-${b.id}`).addEventListener('click', function(e) {
+                e.preventDefault();
+                deleteBatch(b.id);
+            });
         });
     }
 
     function editBatch(id) {
-        const b = batches.find(x => x.id === id);
+        const b = batches.find(x => x.id == id);
+        if(!b) return;
         document.getElementById('editId').value = b.id;
         document.getElementById('batchName').value = b.name;
         document.getElementById('startDate').value = b.startDate;
@@ -318,25 +327,14 @@
         window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
-   function deleteBatch(id) { 
-    // Convertemos o ID para número para evitar erros de tipo (string vs number)
-    const idParaRemover = Number(id);
-
-    if(confirm("Deseja eliminar este lote permanentemente?")) { 
-        // Filtra a lista removendo o item com o ID correspondente
-        batches = batches.filter(x => Number(x.id) !== idParaRemover); 
-        
-        // Salva a nova lista no LocalStorage e atualiza a tela
+    function deleteBatch(id) { 
+        // Eliminando direto para garantir que o Android não bloqueie popups
+        batches = batches.filter(x => x.id != id); 
         save(); 
-        
-        // Opcional: feedback rápido
-        console.log("Lote removido:", idParaRemover);
-    } 
-}
+    }
 
     document.getElementById('startDate').valueAsDate = new Date();
     render();
 </script>
 </body>
 </html>
-
