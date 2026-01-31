@@ -250,11 +250,28 @@ function save() {
     localStorage.setItem(DB, jsonStr); 
     
     if (window.AndroidBridge) {
-        // Isso ativa o seu 'agendarVerificacao' no Sketchware
+        // Salva para o Android agendar a verificação de amanhã
         window.AndroidBridge.salvarParaSegundoPlano(jsonStr);
         
-        // TESTE IMEDIATO: Vamos forçar uma notificação para ver se o More Block funciona
-        window.AndroidBridge.dispararNotificacao("Lote Salvo", "O sistema de alertas foi atualizado!");
+        // Verifica cada lote para mandar notificações IMEDIATAS se necessário
+        batches.forEach(b => {
+            const s = calculate(b); // Usa a função de cálculo que já temos
+            
+            // Alerta de Ovoscopia
+            if (s.day === 7 || s.day === 14) {
+                window.AndroidBridge.dispararNotificacao("🔍 Ovoscopia Hoje!", "Lote " + b.name + ": Dia de verificar os ovos.");
+            }
+            
+            // Alerta de Umidade (3 dias antes do nascimento)
+            if (s.left === 3) {
+                window.AndroidBridge.dispararNotificacao("💧 Ajuste a Umidade", "Lote " + b.name + ": Faltam 3 dias. Pare a viragem!");
+            }
+
+            // Alerta de Nascimento
+            if (s.left === 0) {
+                window.AndroidBridge.dispararNotificacao("🐥 Eclosão!", "Lote " + b.name + ": Os pintinhos começam a nascer hoje!");
+            }
+        });
     }
     render(); 
 }
@@ -378,6 +395,7 @@ function save() {
 </script>
 </body>
 </html>
+
 
 
 
