@@ -56,7 +56,7 @@
         /* DESTAQUE DOS NÚMEROS */
         .status-box b { 
             display: block; 
-            font-size: 32px; /* Números bem grandes */
+            font-size: 32px; 
             color: var(--primary-dark); 
             font-weight: 800;
             line-height: 1.1;
@@ -116,7 +116,14 @@
             padding: 10px; font-size: 12px; font-weight: 600; color: #64748B; cursor: pointer;
         }
 
-        .btn-footer { font-size: 14px; font-weight: 700; cursor: pointer; padding: 10px; }
+        /* BOTÕES DE RODAPÉ CORRIGIDOS */
+        .btn-footer { 
+            flex: 1; border: none; background: none; 
+            font-size: 14px; font-weight: 700; cursor: pointer; 
+            padding: 12px; font-family: 'Poppins', sans-serif;
+            border-radius: 12px; transition: 0.2s;
+        }
+        .btn-footer:active { background: #f1f5f9; }
 
         @media (min-width: 768px) {
             #batchList { grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); }
@@ -254,7 +261,7 @@
         today.setHours(0,0,0,0);
         const diff = Math.floor((today - start) / (1000*60*60*24));
         
-        const day = diff + 1; // Hoje é o 1º dia
+        const day = diff + 1; 
         const left = Math.max(b.totalDays - diff, 0);
         const pct = Math.min(Math.max((diff / b.totalDays) * 100, 5), 100); 
         return { day, left, pct };
@@ -291,9 +298,9 @@
                     <div class="status-box"><b>${s.left}</b><span>Faltam</span></div>
                 </div>
                 ${alertsHtml}
-                <div style="display:flex; justify-content:space-between; border-top:1px solid #f1f5f9; margin-top:10px; padding-top:10px">
-                    <span class="btn-footer" style="color:#3498db" onclick="editBatch(${b.id})">⚙️ Editar</span>
-                    <span class="btn-footer" style="color:#e74c3c" onclick="deleteBatch(${b.id})">🗑️ Eliminar</span>
+                <div style="display:flex; justify-content:space-between; border-top:1px solid #f1f5f9; margin-top:10px; padding-top:5px">
+                    <button class="btn-footer" style="color:#3498db" onclick="editBatch(${b.id})">⚙️ Editar</button>
+                    <button class="btn-footer" style="color:#e74c3c" onclick="deleteBatch(${b.id})">🗑️ Eliminar</button>
                 </div>
             `;
             list.appendChild(item);
