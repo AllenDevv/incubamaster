@@ -245,15 +245,23 @@
         } catch (err) { alert("Erro ao importar."); }
     }
 
-    function save() { 
-        const jsonStr = JSON.stringify(batches);
-        localStorage.setItem(DB, jsonStr); 
-        if (window.AndroidBridge && window.AndroidBridge.salvarParaSegundoPlano) {
-            window.AndroidBridge.salvarParaSegundoPlano(jsonStr);
-        }
-        render(); 
+  function save() { 
+    const jsonStr = JSON.stringify(batches);
+    
+    // 1. Salva no navegador (LocalStorage)
+    localStorage.setItem(DB, jsonStr); 
+    
+    // 2. Avisa o Android (A ponte que você criou no Java)
+    if (window.AndroidBridge && window.AndroidBridge.salvarParaSegundoPlano) {
+        // Envia o JSON para o Java, que por sua vez chama o agendarVerificacao()
+        window.AndroidBridge.salvarParaSegundoPlano(jsonStr);
+        console.log("Dados enviados para o Android agendar notificações.");
+    } else {
+        console.log("AndroidBridge não encontrado.");
     }
-
+    
+    render(); 
+}
     function handleForm() {
         const name = document.getElementById('batchName').value;
         const speciesSelect = document.getElementById('species');
@@ -374,3 +382,4 @@
 </script>
 </body>
 </html>
+
