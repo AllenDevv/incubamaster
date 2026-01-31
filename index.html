@@ -181,11 +181,23 @@
     const DB = 'incubamaster_db';
     let batches = JSON.parse(localStorage.getItem(DB)) || [];
 
+    // --- FUNÇÃO CORRIGIDA PARA SUMIR O BOTÃO ---
     function requestNotificationPermission() {
         if (window.AndroidBridge) {
-            AndroidBridge.dispararNotificacao("IncubaMaster Pro", "Alertas ativados com sucesso!");
+            // Salva na memória do navegador que já foi clicado
+            localStorage.setItem('perm_notificacao', 'true');
+            // Esconde o botão imediatamente
             document.getElementById('btnPermission').style.display = 'none';
+            // Chama o agendamento no Java
+            save(); 
+        } else {
+            alert("Disponível apenas no aplicativo instalado.");
         }
+    }
+
+    // Verifica ao carregar a página se o botão deve sumir
+    if (localStorage.getItem('perm_notificacao') === 'true') {
+        document.getElementById('btnPermission').style.display = 'none';
     }
 
     function exportData() {
@@ -203,7 +215,6 @@
                 if(Array.isArray(importados)){
                     batches = importados;
                     save();
-                    if(window.AndroidBridge) AndroidBridge.dispararNotificacao("Sucesso", "Dados importados!");
                 }
             } catch(err) { alert("Erro no arquivo!"); }
         };
@@ -214,7 +225,7 @@
         const jsonStr = JSON.stringify(batches);
         localStorage.setItem(DB, jsonStr); 
         
-        // NOVO: Envia os dados para o Java processar em segundo plano
+        // Envia os dados para o Java processar em SEGUNDO PLANO
         if (window.AndroidBridge && window.AndroidBridge.salvarParaSegundoPlano) {
             window.AndroidBridge.salvarParaSegundoPlano(jsonStr);
         }
@@ -273,12 +284,8 @@
             birthDate.setDate(startDate.getDate() + parseInt(b.totalDays));
             const birthDateStr = birthDate.toLocaleDateString('pt-BR');
 
-            // --- LÓGICA DE NOTIFICAÇÃO (App Aberto) ---
-            if (window.AndroidBridge) {
-                if (s.day === 7 || s.day === 14) AndroidBridge.dispararNotificacao("🔍 Ovoscopia: " + b.name, "Dia de conferir os ovos!");
-                if (s.left <= 3 && s.left > 0) AndroidBridge.dispararNotificacao("💧 Umidade: " + b.name, "Aumente a umidade agora!");
-                if (s.left === 0) AndroidBridge.dispararNotificacao("🐥 Eclosão: " + b.name, "Os pintinhos nascem hoje!");
-            }
+            // --- LÓGICA DE NOTIFICAÇÃO REMOVIDA DAQUI ---
+            // Agora apenas o Receiver.java cuida das notificações!
 
             const item = document.createElement('div');
             item.className = 'card batch-item';
