@@ -318,15 +318,25 @@
         window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
-    function deleteBatch(id) { 
-        if(confirm("Deseja eliminar este lote permanentemente?")) { 
-            batches = batches.filter(x => x.id !== id); 
-            save(); 
-        } 
-    }
+   function deleteBatch(id) { 
+    // Convertemos o ID para número para evitar erros de tipo (string vs number)
+    const idParaRemover = Number(id);
+
+    if(confirm("Deseja eliminar este lote permanentemente?")) { 
+        // Filtra a lista removendo o item com o ID correspondente
+        batches = batches.filter(x => Number(x.id) !== idParaRemover); 
+        
+        // Salva a nova lista no LocalStorage e atualiza a tela
+        save(); 
+        
+        // Opcional: feedback rápido
+        console.log("Lote removido:", idParaRemover);
+    } 
+}
 
     document.getElementById('startDate').valueAsDate = new Date();
     render();
 </script>
 </body>
 </html>
+
