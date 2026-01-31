@@ -16,6 +16,7 @@
             --bg-body: #F0F2F5;
             --card-white: #FFFFFF;
             --text-main: #1e293b;
+            --danger: #e74c3c;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
@@ -53,11 +54,8 @@
         .batch-item { border-left: 6px solid var(--primary-gold); position: relative; }
 
         .status-box b { 
-            display: block; 
-            font-size: 32px; 
-            color: var(--primary-dark); 
-            font-weight: 800;
-            line-height: 1.1;
+            display: block; font-size: 32px; color: var(--primary-dark); 
+            font-weight: 800; line-height: 1.1;
         }
         .status-box span { font-size: 11px; color: #64748B; text-transform: uppercase; font-weight: 600; }
 
@@ -123,6 +121,21 @@
         }
         .btn-footer:active { background: #f1f5f9; transform: scale(0.98); }
 
+        /* MODAL DE AVISO PERSONALIZADO */
+        #customModal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: white; padding: 30px; border-radius: 30px; text-align: center;
+            max-width: 400px; width: 100%; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .btn-modal { padding: 15px; border-radius: 15px; border: none; font-weight: 700; cursor: pointer; }
+        .btn-confirm { background: var(--danger); color: white; }
+        .btn-cancel { background: #E2E8F0; color: #64748B; }
+
         @media (min-width: 768px) {
             #batchList { grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); }
             .content-wrapper { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
@@ -130,6 +143,17 @@
     </style>
 </head>
 <body>
+
+<div id="customModal">
+    <div class="modal-content">
+        <h2 style="margin-top:0">Eliminar Lote?</h2>
+        <p style="color:#64748B">Esta ação não pode ser desfeita. Tem a certeza que deseja remover este lote?</p>
+        <div class="modal-btns">
+            <button class="btn-modal btn-cancel" onclick="closeModal()">Cancelar</button>
+            <button class="btn-modal btn-confirm" id="confirmDeleteBtn">Eliminar</button>
+        </div>
+    </div>
+</div>
 
 <header>
     <h1>IncubaMaster Pro</h1>
@@ -177,6 +201,7 @@
 <script>
     const DB = 'incubamaster_db';
     let batches = JSON.parse(localStorage.getItem(DB)) || [];
+    let idParaEliminar = null;
 
     function requestNotificationPermission() {
         if (window.AndroidBridge) {
@@ -302,18 +327,28 @@
             `;
             list.appendChild(item);
 
-            // Adicionando eventos de clique de forma ultra-segura
-            document.getElementById(`btn-edit-${b.id}`).addEventListener('click', function(e) {
-                e.preventDefault();
-                editBatch(b.id);
-            });
-
-            document.getElementById(`btn-del-${b.id}`).addEventListener('click', function(e) {
-                e.preventDefault();
-                deleteBatch(b.id);
-            });
+            document.getElementById(`btn-edit-${b.id}`).addEventListener('click', () => editBatch(b.id));
+            document.getElementById(`btn-del-${b.id}`).addEventListener('click', () => openModal(b.id));
         });
     }
+
+    function openModal(id) {
+        idParaEliminar = id;
+        document.getElementById('customModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        idParaEliminar = null;
+        document.getElementById('customModal').style.display = 'none';
+    }
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+        if(idParaEliminar) {
+            batches = batches.filter(x => x.id != idParaEliminar); 
+            save();
+            closeModal();
+        }
+    });
 
     function editBatch(id) {
         const b = batches.find(x => x.id == id);
@@ -325,12 +360,6 @@
         document.getElementById('submitBtn').innerText = "Guardar Alterações";
         document.getElementById('cancelBtn').style.display = "block";
         window.scrollTo({top: 0, behavior: 'smooth'});
-    }
-
-    function deleteBatch(id) { 
-        // Eliminando direto para garantir que o Android não bloqueie popups
-        batches = batches.filter(x => x.id != id); 
-        save(); 
     }
 
     document.getElementById('startDate').valueAsDate = new Date();
