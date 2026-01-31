@@ -135,11 +135,11 @@
 
 <header>
     <h1>IncubaMaster Pro</h1>
-    <p>Monitore suas incubações de forma rápida e fácil.</p>
+    <p>Monitorize as suas incubações de forma rápida e fácil.</p>
 </header>
 
 <div class="content-wrapper">
-    <button id="btnPermission" class="btn-notify" onclick="requestNotificationPermission()">🔔 Ativar Alertas no Celular</button>
+    <button id="btnPermission" class="btn-notify" onclick="requestNotificationPermission()">🔔 Ativar Alertas no Telemóvel</button>
 
     <div class="card main-card">
         <input type="hidden" id="editId">
@@ -169,8 +169,8 @@
         
         <div class="backup-buttons">
             <button class="btn-outline" onclick="exportData()">📤 Backup</button>
-            <button class="btn-outline" onclick="document.getElementById('importFile').click()">📥 Importar</button>
-            <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
+            <button class="btn-outline" onclick="importarDados()">📥 Importar</button>
+            <input type="file" id="importFile" style="display:none" accept=".json" onchange="importDataNormal(event)">
         </div>
     </div>
 
@@ -181,55 +181,70 @@
     const DB = 'incubamaster_db';
     let batches = JSON.parse(localStorage.getItem(DB)) || [];
 
-    // --- FUNÇÃO CORRIGIDA PARA SUMIR O BOTÃO ---
+    // --- PERMISSÃO E OCULTAR BOTÃO ---
     function requestNotificationPermission() {
         if (window.AndroidBridge) {
-            // Salva na memória do navegador que já foi clicado
             localStorage.setItem('perm_notificacao', 'true');
-            // Esconde o botão imediatamente
             document.getElementById('btnPermission').style.display = 'none';
-            // Chama o agendamento no Java
             save(); 
-        } else {
-            alert("Disponível apenas no aplicativo instalado.");
         }
     }
 
-    // Verifica ao carregar a página se o botão deve sumir
     if (localStorage.getItem('perm_notificacao') === 'true') {
         document.getElementById('btnPermission').style.display = 'none';
     }
 
+    // --- BACKUP E IMPORTAÇÃO ---
     function exportData() {
         const dadosStr = JSON.stringify(batches);
-        if (window.AndroidBridge) {
+        if (window.AndroidBridge && window.AndroidBridge.salvarBackup) {
             AndroidBridge.salvarBackup(dadosStr);
+        } else {
+            const blob = new Blob([dadosStr], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'backup_incubamaster.json';
+            a.click();
         }
     }
 
-    function importData(e) {
+    function importarDados() {
+        if (window.AndroidBridge && window.AndroidBridge.importarDados) {
+            AndroidBridge.importarDados(); // Chama o Java do Sketchware
+        } else {
+            document.getElementById('importFile').click(); // Fallback Browser
+        }
+    }
+
+    // Chamada pelo Java após selecionar o arquivo
+    function importarDoAndroid(jsonString) {
+        try {
+            const importados = JSON.parse(jsonString);
+            if (Array.isArray(importados)) {
+                batches = importados;
+                save();
+                alert("Dados importados com sucesso!");
+            }
+        } catch (err) {
+            alert("Erro ao processar o arquivo de backup.");
+        }
+    }
+
+    // Fallback para navegador comum
+    function importDataNormal(e) {
         const reader = new FileReader();
-        reader.onload = (event) => { 
-            try {
-                const importados = JSON.parse(event.target.result); 
-                if(Array.isArray(importados)){
-                    batches = importados;
-                    save();
-                }
-            } catch(err) { alert("Erro no arquivo!"); }
-        };
+        reader.onload = (event) => { importarDoAndroid(event.target.result); };
         reader.readAsText(e.target.files[0]);
     }
 
+    // --- LÓGICA CORE ---
     function save() { 
         const jsonStr = JSON.stringify(batches);
         localStorage.setItem(DB, jsonStr); 
-        
-        // Envia os dados para o Java processar em SEGUNDO PLANO
         if (window.AndroidBridge && window.AndroidBridge.salvarParaSegundoPlano) {
             window.AndroidBridge.salvarParaSegundoPlano(jsonStr);
         }
-        
         render(); 
     }
 
@@ -242,7 +257,7 @@
         const eggs = document.getElementById('eggCount').value;
         const id = document.getElementById('editId').value;
 
-        if (!name || !date) return alert("Preencha nome e data!");
+        if (!name || !date) return alert("Preencha o nome e a data!");
 
         if (id) {
             batches = batches.map(b => b.id == id ? {...b, name, totalDays: days, speciesName, startDate: date, eggCount: eggs} : b);
@@ -284,15 +299,12 @@
             birthDate.setDate(startDate.getDate() + parseInt(b.totalDays));
             const birthDateStr = birthDate.toLocaleDateString('pt-BR');
 
-            // --- LÓGICA DE NOTIFICAÇÃO REMOVIDA DAQUI ---
-            // Agora apenas o Receiver.java cuida das notificações!
-
             const item = document.createElement('div');
             item.className = 'card batch-item';
 
             let alertsHtml = '';
             if (s.day === 7 || s.day === 14) alertsHtml += `<div class="alert-box alert-info">🔍 <b>Ovoscopia:</b> Dia de verificar o desenvolvimento.</div>`;
-            if (s.left <= 3 && s.left > 0) alertsHtml += `<div class="alert-box alert-warning">💧 <b>Manejo:</b> Aumente a umidade e pare a viragem!</div>`;
+            if (s.left <= 3 && s.left > 0) alertsHtml += `<div class="alert-box alert-warning">💧 <b>Manejo:</b> Aumente a humidade e pare a viragem!</div>`;
             if (s.left === 0) alertsHtml += `<div class="alert-box alert-success">🐥 <b>Eclosão:</b> Nascimento previsto para hoje!</div>`;
 
             item.innerHTML = `
@@ -310,7 +322,7 @@
                 ${alertsHtml}
                 <div style="display:flex; justify-content:space-between; border-top:1px solid #eee; margin-top:10px; padding-top:15px">
                     <span onclick="editBatch(${b.id})" style="color:#3498db; cursor:pointer; font-weight:600">Editar</span>
-                    <span onclick="deleteBatch(${b.id})" style="color:#e74c3c; cursor:pointer; font-weight:600">Excluir</span>
+                    <span onclick="deleteBatch(${b.id})" style="color:#e74c3c; cursor:pointer; font-weight:600">Eliminar</span>
                 </div>
             `;
             list.appendChild(item);
@@ -323,13 +335,13 @@
         document.getElementById('batchName').value = b.name;
         document.getElementById('startDate').value = b.startDate;
         document.getElementById('eggCount').value = b.eggCount;
-        document.getElementById('submitBtn').innerText = "Salvar Alterações";
+        document.getElementById('submitBtn').innerText = "Guardar Alterações";
         document.getElementById('cancelBtn').style.display = "block";
         window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
     function deleteBatch(id) { 
-        if(confirm("Excluir este lote?")) { batches = batches.filter(x => x.id !== id); save(); } 
+        if(confirm("Eliminar este lote?")) { batches = batches.filter(x => x.id !== id); save(); } 
     }
 
     document.getElementById('startDate').valueAsDate = new Date();
