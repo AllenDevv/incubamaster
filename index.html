@@ -245,21 +245,25 @@
         } catch (err) { alert("Erro ao importar."); }
     }
 
-  function save() { 
+function save() { 
     const jsonStr = JSON.stringify(batches);
-    
-    // 1. Salva no navegador (LocalStorage)
     localStorage.setItem(DB, jsonStr); 
     
-    // 2. Avisa o Android (A ponte que você criou no Java)
-    if (window.AndroidBridge && window.AndroidBridge.salvarParaSegundoPlano) {
-        // Envia o JSON para o Java, que por sua vez chama o agendarVerificacao()
+    if (window.AndroidBridge) {
+        // Envia o JSON para o Sketchware salvar nas SharedPreferences
         window.AndroidBridge.salvarParaSegundoPlano(jsonStr);
-        console.log("Dados enviados para o Android agendar notificações.");
-    } else {
-        console.log("AndroidBridge não encontrado.");
+        
+        // Verifica se há algo importante HOJE para notificar imediatamente
+        batches.forEach(b => {
+            const s = calculate(b);
+            if (s.day === 7 || s.day === 14) {
+                window.AndroidBridge.dispararNotificacao("Hora da Ovoscopia!", "Lote " + b.name + " está no " + s.day + "º dia.");
+            }
+            if (s.left === 0) {
+                window.AndroidBridge.dispararNotificacao("Eclosão Hoje!", "Os pintinhos do lote " + b.name + " estão nascendo!");
+            }
+        });
     }
-    
     render(); 
 }
     function handleForm() {
@@ -382,4 +386,5 @@
 </script>
 </body>
 </html>
+
 
