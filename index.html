@@ -4,11 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>IncubaMaster Pro</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1A2F50">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
     <style>
         :root {
             --primary-dark: #1A2F50;
@@ -16,132 +12,189 @@
             --bg-body: #F0F2F5;
             --card-white: #FFFFFF;
             --text-main: #1e293b;
+            --text-sub: #64748B;
+            --border-color: #E2E8F0;
             --danger: #e74c3c;
+            --header-bg: #1A2F50;
+            --num-color: #1A2F50;
+            --note-bg: #FEF9C3;
+            --note-text: #475569;
+            --success: #22c55e;
+            --warning-bg: #fff7ed;
+            --warning-text: #9a3412;
+        }
+
+        body.dark-mode {
+            --bg-body: #0F172A;
+            --card-white: #1E293B;
+            --text-main: #F1F5F9;
+            --text-sub: #94A3B8;
+            --border-color: #334155;
+            --header-bg: #1E293B;
+            --num-color: #FFC000;
+            --note-bg: #334155;
+            --note-text: #F1F5F9;
+            --warning-bg: #431407;
+            --warning-text: #fdba74;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        
-        body { 
-            margin: 0; padding: 0; background-color: var(--bg-body); 
+        body {
+            margin: 0; padding: 0; background-color: var(--bg-body);
             min-height: 100vh; font-family: 'Poppins', sans-serif;
-            color: var(--text-main);
+            color: var(--text-main); transition: all 0.3s ease;
         }
+
+        nav {
+            background: var(--header-bg); height: 65px; display: flex;
+            align-items: center; justify-content: space-between;
+            padding: 0 20px; position: sticky; top: 0; z-index: 999;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        nav h2 { color: var(--primary-gold); font-size: 18px; margin: 0; font-weight: 800; }
+
+        .menu-btn {
+            background: rgba(255,255,255,0.1); border: none; width: 40px; height: 40px;
+            border-radius: 10px; color: white; font-size: 20px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .menu-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000; justify-content: flex-end;
+        }
+        .menu-content {
+            background: var(--card-white); width: 280px; height: 100%;
+            padding: 40px 20px; box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            animation: slideIn 0.2s ease-out; overflow-y: auto;
+        }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+        .switch-container {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 20px 0; border-bottom: 1px solid var(--border-color);
+        }
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: .4s; border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--primary-gold); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        /* Estilo do Aviso de Dados */
+        .data-alert {
+            background: var(--warning-bg); color: var(--warning-text);
+            padding: 12px; border-radius: 12px; font-size: 11px;
+            margin-bottom: 20px; border: 1px dashed var(--warning-text);
+            line-height: 1.4;
+        }
+
+        .tips-container { margin-top: 25px; }
+        .tips-container h4 { color: var(--text-main); margin-bottom: 15px; font-size: 16px; border-left: 4px solid var(--primary-gold); padding-left: 10px; }
+        .tip-box { background: var(--bg-body); padding: 12px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border-color); }
+        .tip-box h5 { margin: 0 0 5px 0; font-size: 13px; color: var(--primary-gold); text-transform: uppercase; }
+        .tip-box p { margin: 0; font-size: 12px; color: var(--text-sub); line-height: 1.4; }
 
         header {
-            background: var(--primary-dark); 
-            padding: 50px 20px 80px 20px;
-            text-align: center; color: white; 
-            border-bottom-left-radius: 40px;
-            border-bottom-right-radius: 40px;
+            background: var(--header-bg); padding: 30px 20px 80px 20px;
+            text-align: center; color: white; border-bottom-left-radius: 40px; border-bottom-right-radius: 40px;
         }
 
-        header h1 { margin: 0; color: var(--primary-gold); font-size: 28px; }
-
         .content-wrapper {
-            width: 100%; max-width: 1100px; 
-            margin: -50px auto 50px;
-            padding: 0 20px;
-            display: flex; flex-direction: column; gap: 25px; /* Aumentei o espaço geral */
-            align-items: center;
+            width: 100%; max-width: 1100px; margin: -60px auto 50px;
+            padding: 0 20px; display: flex; flex-direction: column; gap: 25px; align-items: center;
         }
 
         .card {
             background: var(--card-white); border-radius: 28px;
-            padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            width: 100%;
+            padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); width: 100%;
+            border: 1px solid var(--border-color); position: relative;
         }
 
-        .main-card { max-width: 450px; margin-bottom: 10px; } /* Margem extra abaixo do form */
-        .batch-item { border-left: 6px solid var(--primary-gold); position: relative; }
+        .main-card { max-width: 450px; }
+        .batch-item { border-left: 6px solid var(--primary-gold); }
+        .batch-completed { border-left: 6px solid var(--success) !important; }
 
-        .status-box b { 
-            display: block; font-size: 32px; color: var(--primary-dark); 
-            font-weight: 800; line-height: 1.1;
+        .status-box b {
+            display: block; font-size: 32px; color: var(--num-color);
+            font-weight: 800; line-height: 1.1; transition: color 0.3s;
         }
-        .status-box span { font-size: 11px; color: #64748B; text-transform: uppercase; font-weight: 600; }
+        .status-box span { font-size: 11px; color: var(--text-sub); text-transform: uppercase; font-weight: 600; }
 
         .date-highlight {
-            background: #FFF4E5; color: #D97706;
-            padding: 5px 12px; border-radius: 8px;
-            font-size: 13px; font-weight: 700;
+            background: rgba(255, 192, 0, 0.1); color: #D97706;
+            padding: 5px 12px; border-radius: 8px; font-size: 13px; font-weight: 700;
             display: inline-block; margin: 10px 0;
         }
-
-        .btn-notify {
-            background: #e1e8ef; color: var(--primary-dark); border: none;
-            padding: 12px; border-radius: 15px; font-size: 13px; font-weight: 600;
-            cursor: pointer; margin-bottom: 5px; width: 100%; display: flex; 
-            align-items: center; justify-content: center; gap: 8px;
+        .completed-msg {
+            background: rgba(34, 197, 94, 0.1); color: var(--success);
+            padding: 8px 15px; border-radius: 10px; font-size: 14px; font-weight: 800;
+            display: block; margin: 10px 0; border: 1px solid rgba(34, 197, 94, 0.2);
         }
 
         .form-group { margin-bottom: 15px; }
-        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #64748B; }
-        
-        input, select {
-            width: 100%; height: 55px; border: 1.5px solid #E2E8F0; border-radius: 15px;
-            padding: 0 15px; font-family: inherit; font-size: 16px; background: #F8FAFC;
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-sub); }
+
+        input, select, textarea {
+            width: 100%; height: 55px; border: 1.5px solid var(--border-color); border-radius: 15px;
+            padding: 0 15px; font-family: inherit; font-size: 16px; background: var(--bg-body); color: var(--text-main);
         }
+        textarea { height: 80px; padding: 12px; resize: none; margin-bottom: 10px; }
 
         .btn-action {
-            background: var(--primary-gold); color: var(--primary-dark); border: none;
+            background: var(--primary-gold); color: #1A2F50; border: none;
             width: 100%; height: 55px; border-radius: 15px; font-weight: 700; font-size: 17px;
             cursor: pointer; margin-top: 10px;
         }
 
-        .alert-box { padding: 12px; border-radius: 12px; font-size: 12px; margin-top: 10px; line-height: 1.4; border: 1px solid transparent; }
-        .alert-info { background: #EBF8FF; color: #2B6CB0; border-color: #BEE3F8; }
-        .alert-warning { background: #FFF9E6; color: #856404; border-color: #FFEEBA; }
-        .alert-success { background: #F0FFF4; color: #276749; border-color: #C6F6D5; }
+        .notes-section, .final-section {
+            background: var(--bg-body); border-radius: 18px;
+            padding: 15px; margin-top: 15px; display: none;
+        }
+        .note-item {
+            background: var(--note-bg); padding: 10px; border-radius: 12px;
+            margin-bottom: 8px; position: relative; border-left: 4px solid var(--primary-gold);
+        }
+        .note-item p { margin: 0; font-size: 13px; color: var(--note-text); }
+        .btn-delete-note { position: absolute; right: 5px; top: 5px; border: none; background: none; color: #94A3B8; cursor: pointer; }
 
-        /* LISTA COM ESPAÇAMENTO CORRIGIDO */
-        #batchList { 
-            width: 100%; 
-            display: grid; 
-            grid-template-columns: 1fr; 
-            gap: 25px; 
-            margin-top: 15px; /* Impede de encostar no formulário */
+        .success-badge {
+            background: var(--success); color: white; padding: 4px 12px; border-radius: 8px;
+            font-size: 12px; font-weight: 700; display: inline-block; margin-top: 5px;
         }
 
-        .tag-especie {
-            background: #E1E8EF; color: var(--primary-dark);
-            font-size: 10px; font-weight: 800; padding: 4px 10px;
-            border-radius: 8px; text-transform: uppercase;
+        #batchList { width: 100%; display: grid; grid-template-columns: 1fr; gap: 25px; margin-top: 15px; }
+        .tag-especie, .tag-ovos {
+            background: var(--bg-body); color: var(--text-main);
+            font-size: 10px; font-weight: 800; padding: 4px 12px;
+            border-radius: 8px; text-transform: uppercase; border: 1.5px solid var(--border-color);
         }
 
         .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0; }
-        .status-box { background: #F8FAFC; padding: 15px; border-radius: 18px; text-align: center; border: 1px solid #F1F5F9; }
+        .status-box { background: var(--bg-body); padding: 15px; border-radius: 18px; text-align: center; border: 1px solid var(--border-color); }
 
-        .progress-container { height: 10px; background: #E2E8F0; border-radius: 10px; overflow: hidden; margin-top: 5px; }
-        .progress-bar { height: 100%; background: var(--primary-dark); transition: width 0.5s; }
-
-        .backup-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        .btn-outline {
-            background: #fff; border: 1.5px solid #E2E8F0; border-radius: 12px;
-            padding: 10px; font-size: 12px; font-weight: 600; color: #64748B; cursor: pointer;
+        .btn-footer {
+            flex: 1; border: none; background: transparent; color: var(--text-sub);
+            font-size: 11px; font-weight: 700; padding: 10px 5px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; gap: 3px; cursor: pointer;
         }
-
-        .btn-footer { 
-            flex: 1; border: none; background: transparent; 
-            font-size: 14px; font-weight: 700; cursor: pointer; 
-            padding: 12px; font-family: 'Poppins', sans-serif;
-            border-radius: 12px; transition: 0.2s;
-            display: flex; align-items: center; justify-content: center; gap: 4px;
-        }
-        .btn-footer:active { background: #f1f5f9; transform: scale(0.98); }
 
         #customModal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;
-            padding: 20px;
+            background: rgba(0,0,0,0.7); z-index: 1001; align-items: center; justify-content: center; padding: 20px;
         }
-        .modal-content {
-            background: white; padding: 30px; border-radius: 30px; text-align: center;
-            max-width: 400px; width: 100%; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        .modal-content { background: var(--card-white); padding: 30px; border-radius: 30px; text-align: center; width: 100%; max-width: 400px; }
+
+        footer {
+            text-align: center; padding: 20px; font-size: 10px; color: var(--text-sub);
+            opacity: 0.7; margin-bottom: 20px;
         }
-        .modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        .btn-modal { padding: 15px; border-radius: 15px; border: none; font-weight: 700; cursor: pointer; }
-        .btn-confirm { background: var(--danger); color: white; }
-        .btn-cancel { background: #E2E8F0; color: #64748B; }
 
         @media (min-width: 768px) {
             #batchList { grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); }
@@ -151,25 +204,60 @@
 </head>
 <body>
 
+<nav>
+    <h2>IncubaMaster Pro</h2>
+    <button class="menu-btn" onclick="toggleMenu()">☰</button>
+</nav>
+
+<div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()">
+    <div class="menu-content" onclick="event.stopPropagation()">
+        <h3 style="margin-top:0">Configurações</h3>
+
+        <div class="data-alert">
+            <strong>⚠️ Atenção:</strong> As informações são salvas localmente no seu dispositivo. Se você limpar o cache do navegador ou desinstalar o app, os dados serão <strong>perdidos permanentemente</strong>.
+        </div>
+
+        <div class="switch-container">
+            <span>🌙 Modo Escuro</span>
+            <label class="switch">
+                <input type="checkbox" id="themeSwitch" onclick="handleThemeChange()">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="tips-container">
+            <h4>💡 Guia de Sucesso</h4>
+            <div class="tip-box">
+                <h5>🌡️ Temperatura</h5>
+                <p>Mantenha entre 37.5°C e 37.8°C. Oscilações podem atrasar ou impedir o nascimento.</p>
+            </div>
+            <div class="tip-box">
+                <h5>💧 Umidade</h5>
+                <p>Início: 50-55%. Nos últimos 3 dias, suba para 65-70% para facilitar a quebra da casca.</p>
+            </div>
+            <div class="tip-box">
+                <h5>🔄 Viragem</h5>
+                <p>Vire os ovos ao menos 3x ao dia. Pare totalmente a viragem 3 dias antes do nascimento.</p>
+            </div>
+        </div>
+
+        <div onclick="toggleMenu()" style="margin-top: 30px; padding-bottom: 20px; cursor:pointer; color: var(--danger); font-weight:700">✖ Fechar Menu</div>
+    </div>
+</div>
+
 <div id="customModal">
     <div class="modal-content">
-        <h2 style="margin-top:0">Eliminar Lote?</h2>
-        <p style="color:#64748B">Esta ação não pode ser desfeita. Tem a certeza?</p>
-        <div class="modal-btns">
-            <button class="btn-modal btn-cancel" onclick="closeModal()">Cancelar</button>
-            <button class="btn-modal btn-confirm" id="confirmDeleteBtn">Eliminar</button>
+        <h2 id="modalTitle">Confirmar Ação?</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px;">
+            <button class="btn-action" style="background:#E2E8F0; color:#64748B" onclick="closeModal()">Cancelar</button>
+            <button class="btn-action" style="background:var(--danger); color:white" id="confirmDeleteBtn">Confirmar</button>
         </div>
     </div>
 </div>
 
-<header>
-    <h1>IncubaMaster Pro</h1>
-    <p>Monitorize as suas incubações com precisão.</p>
-</header>
+<header><p>Gestão Inteligente de Incubação</p></header>
 
 <div class="content-wrapper">
-    <button id="btnPermission" class="btn-notify" onclick="requestNotificationPermission()">🔔 Ativar Alertas no Telemóvel</button>
-
     <div class="card main-card">
         <input type="hidden" id="editId">
         <div class="form-group">
@@ -185,114 +273,79 @@
                 <option value="30" data-name="Ganso">Ganso (30 dias)</option>
                 <option value="28" data-name="Peru">Peru (28 dias)</option>
                 <option value="24" data-name="Faisão">Faisão (24 dias)</option>
-                <option value="28" data-name="Pavão">Pavão (28 dias)</option>
+                <option value="26" data-name="Pavão">Pavão (26 dias)</option>
             </select>
         </div>
         <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <div><label>Qtd. Ovos</label><input type="number" id="eggCount" value="0"></div>
             <div><label>Data de Início</label><input type="date" id="startDate"></div>
         </div>
-        
         <button id="submitBtn" class="btn-action" onclick="handleForm()">Iniciar Incubação</button>
-        <button id="cancelBtn" onclick="resetForm()" style="display:none; width:100%; background:none; border:none; margin-top:10px; color:#e74c3c; font-weight:700; cursor:pointer;">Cancelar Edição</button>
-        
-        <div class="backup-buttons">
-            <button class="btn-outline" onclick="exportData()">📤 Backup</button>
-            <button class="btn-outline" onclick="importarDados()">📥 Importar</button>
-        </div>
     </div>
-
     <div id="batchList"></div>
 </div>
+
+<footer>
+    Os dados são salvos localmente. Limpar o navegador apagará os registros.
+</footer>
 
 <script>
     const DB = 'incubamaster_db';
     let batches = JSON.parse(localStorage.getItem(DB)) || [];
     let idParaEliminar = null;
 
-    function requestNotificationPermission() {
-        if (window.AndroidBridge) {
-            localStorage.setItem('perm_notificacao', 'true');
-            document.getElementById('btnPermission').style.display = 'none';
-            save(); 
-        }
+    function handleThemeChange() {
+        const isDark = document.getElementById('themeSwitch').checked;
+        document.body.classList.toggle('dark-mode', isDark);
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
     }
 
-    if (localStorage.getItem('perm_notificacao') === 'true') {
-        document.getElementById('btnPermission').style.display = 'none';
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        document.getElementById('themeSwitch').checked = true;
     }
 
-    function exportData() {
-        const dadosStr = JSON.stringify(batches);
-        if (window.AndroidBridge && window.AndroidBridge.salvarBackup) {
-            AndroidBridge.salvarBackup(dadosStr);
-        }
+    function toggleMenu() {
+        const m = document.getElementById('menuOverlay');
+        m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
     }
 
-    function importarDados() {
-        if (window.AndroidBridge && window.AndroidBridge.importarDados) {
-            AndroidBridge.importarDados();
-        }
+    function save() {
+        localStorage.setItem(DB, JSON.stringify(batches));
+        render();
     }
 
-    function importarDoAndroid(jsonString) {
-        try {
-            const importados = JSON.parse(jsonString);
-            if (Array.isArray(importados)) {
-                batches = importados;
-                save();
-            }
-        } catch (err) { alert("Erro ao importar."); }
+    function calculate(batch) {
+        const start = new Date(batch.startDate + 'T12:00:00');
+        const today = new Date();
+        today.setHours(12, 0, 0, 0);
+        const diffDays = Math.floor((today - start) / (1000 * 60 * 60 * 24));
+        return { day: diffDays + 1, left: Math.max(0, batch.totalDays - diffDays) };
     }
 
-function save() { 
-    const jsonStr = JSON.stringify(batches);
-    localStorage.setItem(DB, jsonStr); 
-    
-    if (window.AndroidBridge) {
-        // Salva para o Android agendar a verificação de amanhã
-        window.AndroidBridge.salvarParaSegundoPlano(jsonStr);
-        
-        // Verifica cada lote para mandar notificações IMEDIATAS se necessário
-        batches.forEach(b => {
-            const s = calculate(b); // Usa a função de cálculo que já temos
-            
-            // Alerta de Ovoscopia
-            if (s.day === 7 || s.day === 14) {
-                window.AndroidBridge.dispararNotificacao("🔍 Ovoscopia Hoje!", "Lote " + b.name + ": Dia de verificar os ovos.");
-            }
-            
-            // Alerta de Umidade (3 dias antes do nascimento)
-            if (s.left === 3) {
-                window.AndroidBridge.dispararNotificacao("💧 Ajuste a Umidade", "Lote " + b.name + ": Faltam 3 dias. Pare a viragem!");
-            }
-
-            // Alerta de Nascimento
-            if (s.left === 0) {
-                window.AndroidBridge.dispararNotificacao("🐥 Eclosão!", "Lote " + b.name + ": Os pintinhos começam a nascer hoje!");
-            }
-        });
-    }
-    render(); 
-}
     function handleForm() {
         const name = document.getElementById('batchName').value;
         const speciesSelect = document.getElementById('species');
-        const days = parseInt(speciesSelect.value);
-        const speciesName = speciesSelect.options[speciesSelect.selectedIndex].getAttribute('data-name');
         const date = document.getElementById('startDate').value;
-        const eggs = document.getElementById('eggCount').value;
+        const eggsInput = document.getElementById('eggCount');
+        const eggs = parseInt(eggsInput.value);
         const id = document.getElementById('editId').value;
 
-        if (!name || !date) return alert("Preencha nome e data!");
+        if (!name) return alert("Dê um nome ao seu lote!");
+        if (!eggs || eggs <= 0) {
+            alert("⚠️ Atenção: É obrigatório adicionar a quantidade de ovos para iniciar o lote.");
+            eggsInput.focus();
+            return;
+        }
+        if (!date) return alert("Selecione a data de início!");
 
         if (id) {
-            batches = batches.map(b => b.id == id ? {...b, name, totalDays: days, speciesName, startDate: date, eggCount: eggs} : b);
+            batches = batches.map(b => b.id == id ? {...b, name, totalDays: parseInt(speciesSelect.value), speciesName: speciesSelect.options[speciesSelect.selectedIndex].getAttribute('data-name'), startDate: date, eggCount: eggs} : b);
         } else {
-            batches.push({ id: Date.now(), name, totalDays: days, speciesName, startDate: date, eggCount: eggs });
+            batches.push({ id: Date.now(), name, totalDays: parseInt(speciesSelect.value), speciesName: speciesSelect.options[speciesSelect.selectedIndex].getAttribute('data-name'), startDate: date, eggCount: eggs, notes: [], successRate: null, isCompleted: false });
         }
-        resetForm();
-        save();
+        resetForm(); save();
     }
 
     function resetForm() {
@@ -300,93 +353,120 @@ function save() {
         document.getElementById('batchName').value = "";
         document.getElementById('eggCount').value = "0";
         document.getElementById('startDate').valueAsDate = new Date();
-        document.getElementById('species').selectedIndex = 0;
         document.getElementById('submitBtn').innerText = "Iniciar Incubação";
-        document.getElementById('cancelBtn').style.display = "none";
     }
 
-    function calculate(b) {
-        const start = new Date(b.startDate + 'T00:00:00');
-        const today = new Date(); 
-        today.setHours(0,0,0,0);
-        const diff = Math.floor((today - start) / (1000*60*60*24));
-        
-        const day = diff + 1; 
-        const left = Math.max(b.totalDays - diff, 0);
-        const pct = Math.min(Math.max((diff / b.totalDays) * 100, 5), 100); 
-        return { day, left, pct };
+    function toggleNotes(id) {
+        const el = document.getElementById('notes-' + id);
+        el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+    }
+
+    function toggleFinalize(id) {
+        const el = document.getElementById('final-' + id);
+        el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+    }
+
+    function finalizeBatch(id) {
+        const born = document.getElementById('born-' + id).value;
+        if (born === "") return alert("Digite a quantidade de nascimentos!");
+        batches = batches.map(b => {
+            if (b.id === id) {
+                const rate = Math.round((parseInt(born) / parseInt(b.eggCount)) * 100);
+                return { ...b, successRate: rate, bornCount: born, isCompleted: true };
+            }
+            return b;
+        });
+        save();
+    }
+
+    function addNote(id) {
+        const input = document.getElementById('input-note-' + id);
+        if (!input.value.trim()) return;
+        const note = { id: Date.now(), text: input.value, date: new Date().toLocaleDateString('pt-BR') };
+        batches = batches.map(b => b.id === id ? { ...b, notes: [...(b.notes || []), note] } : b);
+        input.value = ""; save();
+    }
+
+    function deleteNote(batchId, noteId) {
+        batches = batches.map(b => b.id === batchId ? { ...b, notes: b.notes.filter(n => n.id !== noteId) } : b);
+        save();
     }
 
     function render() {
         const list = document.getElementById('batchList');
         list.innerHTML = '';
-        
         batches.forEach(b => {
             const s = calculate(b);
-            const startDate = new Date(b.startDate + 'T00:00:00');
-            const birthDate = new Date(startDate);
-            birthDate.setDate(startDate.getDate() + parseInt(b.totalDays));
+            const birthDate = new Date(b.startDate + 'T12:00:00');
+            birthDate.setDate(birthDate.getDate() + parseInt(b.totalDays));
+
+            const notesHtml = (b.notes || []).map(n => `
+                <div class="note-item">
+                    <button class="btn-delete-note" onclick="deleteNote(${b.id}, ${n.id})">✕</button>
+                    <p>${n.text}</p>
+                </div>
+            `).join('');
 
             const item = document.createElement('div');
-            item.className = 'card batch-item';
-
-            let alertsHtml = '';
-            if (s.day === 7 || s.day === 14) alertsHtml += `<div class="alert-box alert-info">🔍 <b>Ovoscopia:</b> Dia de ver o progresso.</div>`;
-            if (s.left <= 3 && s.left > 0) alertsHtml += `<div class="alert-box alert-warning">💧 <b>Manejo:</b> Humidade e parar viragem!</div>`;
-            if (s.left === 0) alertsHtml += `<div class="alert-box alert-success">🐥 <b>Eclosão:</b> Nascimento previsto hoje!</div>`;
+            item.className = `card batch-item ${b.isCompleted ? 'batch-completed' : ''}`;
 
             item.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <span class="tag-especie">${b.speciesName || 'Ave'}</span>
-                    <span style="font-size:11px; font-weight:700; color:#94A3B8;">${b.eggCount} ovos</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span class="tag-especie">${b.speciesName}</span>
+                    <span class="tag-ovos">🥚 ${b.eggCount} ovos</span>
                 </div>
-                <h3 style="margin:5px 0 0 0;">${b.name}</h3>
-                <span class="date-highlight">📅 Nascimento: ${birthDate.toLocaleDateString('pt-BR')}</span>
-                <div class="progress-container"><div class="progress-bar" style="width:${s.pct}%"></div></div>
+
+                <h3 style="margin:0">${b.name}</h3>
+
+                ${b.isCompleted ?
+                    `<span class="completed-msg">🎉 Incubação Concluída</span>
+                     <div class="success-badge">Taxa de Sucesso: ${b.successRate}% (${b.bornCount} nascidos)</div>` :
+                    `<br><span class="date-highlight">📅 Nascimento: ${birthDate.toLocaleDateString('pt-BR')}</span>`
+                }
+
                 <div class="status-grid">
-                    <div class="status-box"><b>${s.day}º</b><span>Dia</span></div>
-                    <div class="status-box"><b>${s.left}</b><span>Faltam</span></div>
+                    <div class="status-box"><b>${b.isCompleted ? b.totalDays : s.day}º</b><span>Dia</span></div>
+                    <div class="status-box"><b>${b.isCompleted ? 0 : s.left}</b><span>Faltam</span></div>
                 </div>
-                ${alertsHtml}
-                <div style="display:flex; justify-content:space-between; border-top:1px solid #f1f5f9; margin-top:10px; padding-top:5px">
-                    <button class="btn-footer" style="color:#3498db" id="btn-edit-${b.id}">⚙️ Editar</button>
-                    <button class="btn-footer" style="color:#e74c3c" id="btn-del-${b.id}">🗑️ Eliminar</button>
+
+                <div class="final-section" id="final-${b.id}">
+                    <h4 style="margin:0 0 10px 0; font-size:14px">🐣 Quantos nasceram?</h4>
+                    <input type="number" id="born-${b.id}" placeholder="Ex: 15">
+                    <button class="btn-action" style="height:40px; font-size:14px" onclick="finalizeBatch(${b.id})">Confirmar e Finalizar</button>
+                </div>
+
+                <div class="notes-section" id="notes-${b.id}">
+                    <h4 style="margin:0 0 10px 0; font-size:14px">📝 Notas</h4>
+                    <div id="list-notes-${b.id}">${notesHtml || '<p style="font-size:11px">Sem notas.</p>'}</div>
+                    <textarea id="input-note-${b.id}" placeholder="Nova nota..."></textarea>
+                    <button class="btn-action" style="height:40px; font-size:14px; margin:0" onclick="addNote(${b.id})">Salvar Nota</button>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; border-top:1px solid var(--border-color); padding-top:10px; margin-top:10px">
+                    <button class="btn-footer" onclick="toggleNotes(${b.id})">📝 Notas</button>
+                    ${!b.isCompleted && s.left === 0 ? `<button class="btn-footer" style="color:var(--success)" onclick="toggleFinalize(${b.id})">🐣 Finalizar</button>` : ''}
+                    ${!b.isCompleted ? `<button class="btn-footer" onclick="editBatch(${b.id})">⚙️ Editar</button>` : ''}
+                    <button class="btn-footer" style="color:var(--danger)" onclick="openModal(${b.id})">🗑️ Apagar</button>
                 </div>
             `;
             list.appendChild(item);
-
-            document.getElementById(`btn-edit-${b.id}`).addEventListener('click', () => editBatch(b.id));
-            document.getElementById(`btn-del-${b.id}`).addEventListener('click', () => openModal(b.id));
         });
     }
 
-    function openModal(id) {
-        idParaEliminar = id;
-        document.getElementById('customModal').style.display = 'flex';
-    }
-
-    function closeModal() {
-        idParaEliminar = null;
-        document.getElementById('customModal').style.display = 'none';
-    }
-
+    function openModal(id) { idParaEliminar = id; document.getElementById('customModal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('customModal').style.display = 'none'; }
     document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
-        if(idParaEliminar) {
-            batches = batches.filter(x => x.id != idParaEliminar); 
-            save();
-            closeModal();
-        }
+        batches = batches.filter(x => x.id != idParaEliminar);
+        save(); closeModal();
     });
 
     function editBatch(id) {
         const b = batches.find(x => x.id == id);
-        if(!b) return;
         document.getElementById('editId').value = b.id;
         document.getElementById('batchName').value = b.name;
         document.getElementById('startDate').value = b.startDate;
         document.getElementById('eggCount').value = b.eggCount;
         document.getElementById('submitBtn').innerText = "Guardar Alterações";
-        document.getElementById('cancelBtn').style.display = "block";
         window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
@@ -395,7 +475,3 @@ function save() {
 </script>
 </body>
 </html>
-
-
-
-
