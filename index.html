@@ -211,7 +211,7 @@
             <div><strong>${faltam}</strong><br>Faltam</div>
           </div>
           <div class="actions">
-            <span onclick="alert('Notas em breve')">📝 Notas</span>
+            <span onclick="abrirNotas(${i})">📝 Notas</span>
             <span onclick="remover(${i})" class="danger">🗑 Apagar</span>
           </div>
         </div>`;
@@ -228,6 +228,15 @@
   const lista=document.getElementById('lista');
 
   render();
+
+  function abrirNotas(i){
+    const texto = prompt('Notas da incubação:', dados[i].notas || '');
+    if(texto !== null){
+      dados[i].notas = texto;
+      salvar();
+    }
+  }
+
 </script>
 </body>
 </html>
