@@ -5,124 +5,127 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IncubaMaster</title>
   <style>
-    :root {
-      --azul: #0f2a44;
-      --amarelo: #ffbf00;
-      --cinza-bg: #f2f4f7;
-      --cinza-card: #ffffff;
-      --texto: #1f2937;
+    :root{
+      --azul:#0f2a44;
+      --azul-claro:#1e3a5f;
+      --amarelo:#f4b400;
+      --bg:#f2f4f7;
+      --card:#ffffff;
+      --texto:#1f2937;
+      --borda:#e5e7eb;
+    }
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto}
+    body{margin:0;background:var(--bg);color:var(--texto)}
+
+    header{
+      background:linear-gradient(180deg,var(--azul),var(--azul-claro));
+      color:#fff;
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    header h1{margin:0;font-size:18px;font-weight:600}
+    header button{background:none;border:none;color:#fff;font-size:22px;cursor:pointer}
+
+    .container{max-width:520px;margin:auto;padding:16px}
+
+    .card{
+      background:var(--card);
+      border-radius:18px;
+      padding:16px;
+      margin-bottom:16px;
+      box-shadow:0 8px 20px rgba(0,0,0,.06)
     }
 
-    * {
-      box-sizing: border-box;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
+    .card h2{margin:0 0 12px 0;font-size:16px}
+
+    label{font-size:13px;color:#4b5563;margin-bottom:4px;display:block}
+    input,select{
+      width:100%;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid var(--borda);
+      margin-bottom:10px;
+      font-size:14px
     }
 
-    body {
-      margin: 0;
-      background: var(--cinza-bg);
-      color: var(--texto);
+    .row{display:flex;gap:10px}
+
+    button.primary{
+      width:100%;
+      padding:14px;
+      border:none;
+      border-radius:14px;
+      background:var(--amarelo);
+      font-weight:600;
+      cursor:pointer
     }
 
-    header {
-      background: var(--azul);
-      color: white;
-      padding: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .lote{border-left:5px solid var(--amarelo)}
+
+    .badge{
+      background:#eef2f7;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:12px;
+      display:inline-flex;
+      align-items:center;
+      gap:4px
     }
 
-    header h1 {
-      margin: 0;
-      color: var(--amarelo);
-      font-size: 22px;
+    .status{display:flex;gap:10px;margin:12px 0}
+    .status div{
+      flex:1;
+      background:#f1f5f9;
+      border-radius:12px;
+      padding:10px;
+      text-align:center
     }
+    .status strong{font-size:18px}
 
-    .container {
-      padding: 16px;
-      max-width: 500px;
-      margin: auto;
+    .actions{
+      display:flex;
+      justify-content:space-between;
+      border-top:1px solid var(--borda);
+      padding-top:10px;
+      font-size:13px
     }
+    .actions span{cursor:pointer;display:flex;align-items:center;gap:6px}
+    .danger{color:#dc2626}
 
-    .card {
-      background: var(--cinza-card);
-      border-radius: 18px;
-      padding: 16px;
-      margin-bottom: 16px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-    }
+    footer{text-align:center;font-size:12px;opacity:.6;margin:24px 0}
 
-    label {
-      font-size: 14px;
-      margin-bottom: 6px;
-      display: block;
+    /* Menu lateral */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);display:none}
+    .menu{
+      position:fixed;right:0;top:0;height:100%;width:300px;
+      background:#fff;transform:translateX(100%);
+      transition:.3s;box-shadow:-10px 0 30px rgba(0,0,0,.1);
+      padding:16px;overflow:auto
     }
+    .menu.open{transform:translateX(0)}
+    .overlay.show{display:block}
+    .menu h3{margin-top:0}
+    .menu .section{margin-bottom:16px}
 
-    input, select {
-      width: 100%;
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid #d1d5db;
-      font-size: 16px;
-      margin-bottom: 12px;
-    }
-
-    button {
-      width: 100%;
-      padding: 14px;
-      background: var(--amarelo);
-      border: none;
-      border-radius: 14px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .lote {
-      border-left: 6px solid var(--amarelo);
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 6px 10px;
-      border-radius: 20px;
-      background: #eef2f7;
-      font-size: 12px;
-      margin-right: 6px;
-    }
-
-    .status {
-      display: flex;
-      gap: 12px;
-      margin-top: 12px;
-    }
-
-    .status div {
-      flex: 1;
-      background: #f1f5f9;
-      border-radius: 12px;
-      padding: 12px;
-      text-align: center;
-    }
-
-    footer {
-      font-size: 12px;
-      text-align: center;
-      opacity: 0.6;
-      margin: 24px 0;
-    }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>IncubaMaster</h1>
-  ☰
+  <h1>🥚 IncubaMaster</h1>
+  <button onclick="toggleMenu()">☰</button>
 </header>
 
 <div class="container">
+
   <div class="card">
+    <h2>Nova Incubação</h2>
+
+    <label>Identificação do Lote</label>
+    <input id="nome" placeholder="Ex: Caipira" />
+
     <label>Espécie de Ave</label>
     <select id="especie">
       <option value="21">Galinha (21 dias)</option>
@@ -130,71 +133,101 @@
       <option value="28">Pato (28 dias)</option>
     </select>
 
-    <label>Quantidade de Ovos</label>
-    <input type="number" id="ovos" placeholder="Ex: 20" />
+    <div class="row">
+      <div style="flex:1">
+        <label>Qtd. Ovos</label>
+        <input type="number" id="ovos" />
+      </div>
+      <div style="flex:1">
+        <label>Data de Início</label>
+        <input type="date" id="dataInicio" />
+      </div>
+    </div>
 
-    <label>Data de Início</label>
-    <input type="date" id="dataInicio" />
-
-    <button onclick="iniciarIncubacao()">Iniciar Incubação</button>
+    <button class="primary" onclick="iniciar()">Iniciar Incubação</button>
   </div>
 
-  <div id="lotes"></div>
+  <div id="lista"></div>
 
-  <footer>
-    Os dados são salvos localmente. Limpar o navegador apagará os registros.
-  </footer>
+  <footer>Os dados são salvos localmente. Limpar o navegador apagará os registros.</footer>
+</div>
+
+<div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+<div class="menu" id="menu">
+  <h3>Configurações</h3>
+  <div class="section">
+    <strong>⚠ Atenção</strong>
+    <p style="font-size:13px">As informações são salvas localmente no dispositivo.</p>
+  </div>
+  <div class="section">
+    <strong>🌡 Temperatura</strong>
+    <p style="font-size:13px">37,5°C a 37,8°C</p>
+  </div>
+  <div class="section">
+    <strong>💧 Umidade</strong>
+    <p style="font-size:13px">50–55% | Final: 65–70%</p>
+  </div>
+  <div class="section">
+    <strong>🔄 Viragem</strong>
+    <p style="font-size:13px">3x ao dia. Parar 3 dias antes.</p>
+  </div>
+  <button class="primary" onclick="toggleMenu()">Fechar Menu</button>
 </div>
 
 <script>
-  const lotes = JSON.parse(localStorage.getItem('lotes')) || [];
+  const dados = JSON.parse(localStorage.getItem('incubacoes')) || [];
 
-  function iniciarIncubacao() {
-    const especieDias = parseInt(document.getElementById('especie').value);
-    const especieNome = document.getElementById('especie').selectedOptions[0].text;
-    const ovos = document.getElementById('ovos').value;
-    const dataInicio = document.getElementById('dataInicio').value;
+  function iniciar(){
+    const nome = nomeInput.value || 'Sem nome';
+    const dias = parseInt(especie.value);
+    const especieNome = especie.selectedOptions[0].text;
+    const ovos = ovosInput.value;
+    const data = dataInicio.value;
+    if(!ovos || !data) return alert('Preencha os campos');
+    dados.push({nome,especieNome,dias,ovos,data});
+    salvar();
+  }
 
-    if (!ovos || !dataInicio) {
-      alert('Preencha todos os campos');
-      return;
-    }
-
-    lotes.push({ especieNome, especieDias, ovos, dataInicio });
-    localStorage.setItem('lotes', JSON.stringify(lotes));
+  function salvar(){
+    localStorage.setItem('incubacoes',JSON.stringify(dados));
     render();
   }
 
-  function render() {
-    const container = document.getElementById('lotes');
-    container.innerHTML = '';
-
-    lotes.forEach((lote, index) => {
-      const inicio = new Date(lote.dataInicio);
-      const hoje = new Date();
-      const diasPassados = Math.floor((hoje - inicio) / (1000 * 60 * 60 * 24)) + 1;
-      const faltam = lote.especieDias - diasPassados;
-      const nascimento = new Date(inicio);
-      nascimento.setDate(inicio.getDate() + lote.especieDias);
-
-      container.innerHTML += `
+  function render(){
+    lista.innerHTML='';
+    dados.forEach((l,i)=>{
+      const ini=new Date(l.data);
+      const hoje=new Date();
+      const dia=Math.floor((hoje-ini)/(1000*60*60*24))+1;
+      const faltam=l.dias-dia;
+      const nasc=new Date(ini);nasc.setDate(ini.getDate()+l.dias);
+      lista.innerHTML+=`
         <div class="card lote">
-          <div>
-            <span class="badge">${lote.especieNome}</span>
-            <span class="badge">🥚 ${lote.ovos} ovos</span>
-          </div>
-          <p><strong>Nascimento:</strong> ${nascimento.toLocaleDateString()}</p>
+          <div class="badge">${l.especieNome}</div>
+          <h2>${l.nome}</h2>
+          <p>🥚 ${l.ovos} ovos • 📅 ${nasc.toLocaleDateString()}</p>
           <div class="status">
-            <div><strong>${diasPassados}º</strong><br/>Dia</div>
-            <div><strong>${faltam}</strong><br/>Faltam</div>
+            <div><strong>${dia}º</strong><br>Dia</div>
+            <div><strong>${faltam}</strong><br>Faltam</div>
           </div>
-        </div>
-      `;
+          <div class="actions">
+            <span onclick="alert('Notas em breve')">📝 Notas</span>
+            <span onclick="remover(${i})" class="danger">🗑 Apagar</span>
+          </div>
+        </div>`;
     });
   }
 
+  function remover(i){dados.splice(i,1);salvar()}
+  function toggleMenu(){menu.classList.toggle('open');overlay.classList.toggle('show')}
+
+  const nomeInput=document.getElementById('nome');
+  const ovosInput=document.getElementById('ovos');
+  const dataInicio=document.getElementById('dataInicio');
+  const especie=document.getElementById('especie');
+  const lista=document.getElementById('lista');
+
   render();
 </script>
-
 </body>
 </html>
