@@ -1,6 +1,6 @@
 {
   "att": "true",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "msg": "Uma nova atualização está disponível",
   "title": "Atualização do Sistema",
   "obrigatorio": "true",
